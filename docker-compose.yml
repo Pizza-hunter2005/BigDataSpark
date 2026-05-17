@@ -54,6 +54,7 @@ services:
       CLICKHOUSE_PASSWORD: bigdata
     volumes:
       - ./app:/opt/spark/app
+      - ./jars:/opt/spark/jars-extra
     depends_on:
       postgres:
         condition: service_healthy

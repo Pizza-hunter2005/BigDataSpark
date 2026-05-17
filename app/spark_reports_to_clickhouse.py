@@ -61,20 +61,17 @@ def recreate_clickhouse_table(table_name, ddl_columns, order_by):
 
 
 def write_clickhouse(df, table_name):
-    rows = df.toJSON().collect()
-    if rows:
-        payload = (
-            f"INSERT INTO {CLICKHOUSE_DB}.{table_name} FORMAT JSONEachRow\n"
-            + "\n".join(rows)
-        ).encode("utf-8")
-        try:
-            with urllib.request.urlopen(clickhouse_url(), payload, timeout=120) as response:
-                response.read()
-        except urllib.error.HTTPError as exc:
-            details = exc.read().decode("utf-8", errors="replace")
-            raise RuntimeError(f"ClickHouse insert failed: {details}") from exc
-    print(f"Written ClickHouse table: {table_name}, rows={len(rows)}")
-
+    (
+        df.write
+        .mode("append")
+        .format("jdbc")
+        .option("url", f"jdbc:clickhouse://{CLICKHOUSE_HOST}:8123/{CLICKHOUSE_DB}")
+        .option("dbtable", table_name)
+        .option("user", CLICKHOUSE_USER)
+        .option("password", CLICKHOUSE_PASSWORD)
+        .option("driver", "com.clickhouse.jdbc.ClickHouseDriver")
+        .save()
+    )
 
 def read_postgres_table(spark, table_name):
     return spark.read.jdbc(POSTGRES_URL, table_name, properties=POSTGRES_PROPS)

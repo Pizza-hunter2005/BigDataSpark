@@ -58,7 +58,7 @@ docker compose up -d
 Проверка исходной загрузки:
 
 ```bash
-docker compose exec postgres psql -U bigdata -d bigdata -c "select count(*) from mock_data;"
+docker compose exec spark /opt/spark/bin/spark-submit --jars /opt/spark/jars-extra/postgresql-42.7.3.jar,/opt/spark/jars-extra/clickhouse-jdbc-0.9.8-all.jar /opt/spark/app/spark_reports_to_clickhouse.py
 ```
 
 
@@ -67,13 +67,13 @@ docker compose exec postgres psql -U bigdata -d bigdata -c "select count(*) from
 Сбор модели звезды в PostgreSQL:
 
 ```bash
-docker compose exec spark /opt/spark/bin/spark-submit --repositories https://repo1.maven.org/maven2 --packages org.postgresql:postgresql:42.7.3 /opt/spark/app/spark_star_to_postgres.py
+docker compose exec spark /opt/spark/bin/spark-submit --jars /opt/spark/jars-extra/postgresql-42.7.3.jar /opt/spark/app/spark_star_to_postgres.py
 ```
 
 Создание отчетных таблиц в ClickHouse:
 
 ```bash
-docker compose exec spark /opt/spark/bin/spark-submit --packages org.postgresql:postgresql:42.7.3 /opt/spark/app/spark_reports_to_clickhouse.py
+docker compose exec spark /opt/spark/bin/spark-submit --jars /opt/spark/jars-extra/postgresql-42.7.3.jar,/opt/spark/jars-extra/clickhouse-jdbc-0.9.8-all.jar /opt/spark/app/spark_reports_to_clickhouse.py
 ```
 
 ## Проверка результата
