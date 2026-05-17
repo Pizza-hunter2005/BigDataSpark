@@ -61,17 +61,17 @@ def recreate_clickhouse_table(table_name, ddl_columns, order_by):
 
 
 def write_clickhouse(df, table_name):
-    (
-        df.write
-        .mode("append")
-        .format("jdbc")
-        .option("url", f"jdbc:clickhouse://{CLICKHOUSE_HOST}:8123/{CLICKHOUSE_DB}")
-        .option("dbtable", table_name)
-        .option("user", CLICKHOUSE_USER)
-        .option("password", CLICKHOUSE_PASSWORD)
-        .option("driver", "com.clickhouse.jdbc.ClickHouseDriver")
-        .save()
-    )
+    ch_url = f"jdbc:clickhouse://{CLICKHOUSE_HOST}:8123/{CLICKHOUSE_DB}"
+
+    ch_props = {
+        "user": CLICKHOUSE_USER,
+        "password": CLICKHOUSE_PASSWORD,
+        "driver": "com.clickhouse.jdbc.ClickHouseDriver",
+    }
+
+    df.write.jdbc(ch_url, table_name, "append", properties=ch_props)
+
+    print(f"Written ClickHouse table: {table_name}, rows={df.count()}")
 
 def read_postgres_table(spark, table_name):
     return spark.read.jdbc(POSTGRES_URL, table_name, properties=POSTGRES_PROPS)
